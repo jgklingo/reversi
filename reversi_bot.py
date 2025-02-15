@@ -1,12 +1,32 @@
 import numpy as np
 import random as rand
-import reversi
+import copy
+from reversi import *
+from reversi_moves import *
+
+
+class GameNode:
+    def __init__(self, state: ReversiGameState, move: tuple[int, int]=None):
+        self.state = state
+        self.move = move
+        self.children: list[GameNode] = []
+        self.score = None
+    
+    @staticmethod
+    def generate_children(node: 'GameNode'):
+        valid_moves = node.state.get_valid_moves()
+        for move in valid_moves:
+            new_state = copy.deepcopy(node.state)
+            change_colors(move[0], move[1], new_state.turn, new_state)
+            new_state.turn = 3 - new_state.turn
+            node.children.append(GameNode(new_state, move))
+
 
 class ReversiBot:
     def __init__(self, move_num):
         self.move_num = move_num
 
-    def make_move(self, state):
+    def make_move(self, state: ReversiGameState):
         '''
         This is the only function that needs to be implemented for the lab!
         The bot should take a game state and return a move.
@@ -25,7 +45,104 @@ class ReversiBot:
 
         Move should be a tuple (row, col) of the move you want the bot to make.
         '''
-        valid_moves = state.get_valid_moves()
+        # valid_moves = state.get_valid_moves()
 
-        move = rand.choice(valid_moves) # Moves randomly...for now
-        return move
+        # move = rand.choice(valid_moves) # Moves randomly...for now
+
+        root = GameNode(state)
+        maximizing = state.turn == 1
+        best_node = self.minimax(root, depth=3, maximizing=maximizing)
+        return best_node.move
+    
+    def minimax(self, node: GameNode, depth: int, maximizing: bool):
+        if depth == 0:
+            node.score = self.heuristic(node.state)
+            return node
+        
+        GameNode.generate_children(node)
+
+        if not node.children:  # TODO
+            node.score = self.heuristic(node.state)
+            return node
+        
+        if maximizing:
+            value = float('-inf')
+            bssf = None
+            for child in node.children:
+                candidate = self.minimax(child, depth - 1, False)
+                if candidate.score > value:
+                    value = candidate.score
+                    bssf = child
+            node.score = value
+            return bssf
+        else:
+            value = float('inf')
+            bssf = None
+            for child in node.children:
+                candidate = self.minimax(child, depth - 1, True)
+                if candidate.score < value:
+                    value = candidate.score
+                    bssf = child
+            node.score = value
+            return bssf
+
+    
+    def heuristic(self, state: ReversiGameState):
+        maximizing_coins, minimizing_coins = self.count_coins(state)
+        parity_h = 100 * (maximizing_coins - minimizing_coins) / (maximizing_coins + minimizing_coins)
+
+        maximizing_moves, minimizing_moves = self.count_moves(state)
+        if maximizing_moves + minimizing_moves != 0:
+            mobility_h = 100 * (maximizing_moves - minimizing_moves) / (maximizing_moves + minimizing_moves)
+        else:
+            mobility_h = 0
+
+        maximizing_corners, minimizing_corners = self.count_corners(state)
+        if maximizing_corners + minimizing_corners != 0:
+            corners_h = 100 * (maximizing_corners - minimizing_corners) / (maximizing_corners + minimizing_corners)
+        else:
+            corners_h = 0
+
+        
+        pass
+
+    @staticmethod
+    def count_coins(state: ReversiGameState):
+        # returns the number of coins of each player, returning a tuple 
+        # (maximizing, miniminzing) (or (1, 2))
+        maximizing = 0
+        minimizing = 0
+        for r in range(state.board_dim):
+            for c in range(state.board_dim):
+                if state.board[r][c] == 1:
+                    maximizing += 1
+                elif state.board[r][c] == 2:
+                    minimizing += 1
+        return (maximizing, minimizing)
+    
+    @staticmethod
+    def count_moves(state: ReversiGameState):
+        turn = state.turn
+        state.turn = 1
+        maximizing = len(state.get_valid_moves())
+        state.turn = 2
+        minimizing = len(state.get_valid_moves())
+        state.turn = turn
+        return (maximizing, minimizing)
+    
+    @staticmethod 
+    def count_corners(state: ReversiGameState):
+        corners = [
+            (0, 0), 
+            (0, state.board_dim - 1), 
+            (state.board_dim - 1, 0), 
+            (state.board_dim - 1, state.board_dim - 1)
+            ]
+        maximizing = 0
+        minimizing = 0
+        for r, c in corners:
+            if state.board[r][c] == 1:
+                maximizing += 1
+            elif state.board[r][c] == 2:
+                minimizing += 1
+        return (maximizing, minimizing)
