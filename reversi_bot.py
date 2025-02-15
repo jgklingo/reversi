@@ -103,7 +103,7 @@ class ReversiBot:
         else:
             corners_h = 0
 
-        
+        # TODO: stability heuristic, weights, and negative values (for minimizer?)
         pass
 
     @staticmethod
