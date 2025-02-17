@@ -23,6 +23,8 @@ class GameNode:
 
 
 class ReversiBot:
+    DEPTH = 6
+
     def __init__(self, move_num):
         self.move_num = move_num
 
@@ -50,18 +52,19 @@ class ReversiBot:
         # move = rand.choice(valid_moves) # Moves randomly...for now
 
         root = GameNode(state)
-        maximizing = state.turn == 1
-        best_node = self.minimax(root, depth=3, maximizing=maximizing)
+        maximizing = state.turn == self.move_num
+        best_node = self.alphabeta(root, self.DEPTH, float('-inf'), float('inf'), maximizing=maximizing)
         return best_node.move
+
     
-    def minimax(self, node: GameNode, depth: int, maximizing: bool):
+    def alphabeta(self, node: GameNode, depth: int, alpha: float, beta: float, maximizing: bool):
         if depth == 0 or node.state.turn == -999:
             node.score = self.heuristic(node.state)
             return node
         
         GameNode.generate_children(node)
 
-        if not node.children:  # TODO
+        if not node.children:
             node.score = self.heuristic(node.state)
             return node
         
@@ -69,20 +72,26 @@ class ReversiBot:
             value = float('-inf')
             bssf = None
             for child in node.children:
-                candidate = self.minimax(child, depth - 1, False)
+                candidate = self.alphabeta(child, depth - 1, alpha, beta, False)
                 if candidate.score > value:
                     value = candidate.score
                     bssf = child
+                if value > beta:
+                    break
+                alpha = max(alpha, value)
             node.score = value
             return bssf
         else:
             value = float('inf')
             bssf = None
             for child in node.children:
-                candidate = self.minimax(child, depth - 1, True)
+                candidate = self.alphabeta(child, depth - 1, alpha, beta, True)
                 if candidate.score < value:
                     value = candidate.score
                     bssf = child
+                if value < alpha:
+                    break
+                beta = min(beta, value)
             node.score = value
             return bssf
 
@@ -109,7 +118,7 @@ class ReversiBot:
     @staticmethod
     def count_coins(state: ReversiGameState):
         # returns the number of coins of each player, returning a tuple 
-        # (maximizing, miniminzing) (or (1, 2))
+        # (maximizing, minimizing) (or (1, 2))
         maximizing = 0
         minimizing = 0
         for r in range(state.board_dim):
