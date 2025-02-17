@@ -1,5 +1,4 @@
 import numpy as np
-import reversi_bot
 import socket
 import sys
 import time
@@ -32,6 +31,7 @@ class ReversiServerConnection:
 
 class ReversiGame:
     def __init__(self, host, bot_move_num):
+        import reversi_bot
         self.bot_move_num = bot_move_num
         self.server_conn = ReversiServerConnection(host, bot_move_num)
         self.bot = reversi_bot.ReversiBot(bot_move_num)

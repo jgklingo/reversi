@@ -55,7 +55,7 @@ class ReversiBot:
         return best_node.move
     
     def minimax(self, node: GameNode, depth: int, maximizing: bool):
-        if depth == 0:
+        if depth == 0 or node.state.turn == -999:
             node.score = self.heuristic(node.state)
             return node
         
@@ -104,7 +104,7 @@ class ReversiBot:
             corners_h = 0
 
         # TODO: stability heuristic, weights, and negative values (for minimizer?)
-        pass
+        return 10 * parity_h + 78.922 * mobility_h + 801.724 * corners_h
 
     @staticmethod
     def count_coins(state: ReversiGameState):

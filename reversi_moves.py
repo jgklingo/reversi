@@ -19,7 +19,7 @@ def check_direction(row, col, incx, incy, turn, state):
         c = col + incx * i
         if r < 0 or r > 7 or c < 0 or c > 7:
             break
-        sequence[seqLen] = state[r][c]
+        sequence[seqLen] = state.board[r][c]
         seqLen += 1
 
     count = 0
@@ -46,8 +46,8 @@ def check_direction(row, col, incx, incy, turn, state):
             i = 1
             r = row + incy * i
             c = col + incx * i
-            while state[r][c] == 2:
-                state[r][c] = 1
+            while state.board[r][c] == 2:
+                state.board[r][c] = 1
                 i += 1
                 r = row + incy * i
                 c = col + incx * i
@@ -55,8 +55,8 @@ def check_direction(row, col, incx, incy, turn, state):
             i = 1
             r = row + incy * i
             c = col + incx * i
-            while state[r][c] == 1:
-                state[r][c] = 2
+            while state.board[r][c] == 1:
+                state.board[r][c] = 2
                 i += 1
                 r = row + incy * i
                 c = col + incx * i
