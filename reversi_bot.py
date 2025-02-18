@@ -115,32 +115,29 @@ class ReversiBot:
         # TODO: stability heuristic, weights, and negative values (for minimizer?)
         return 10 * parity_h + 78.922 * mobility_h + 801.724 * corners_h
 
-    @staticmethod
-    def count_coins(state: ReversiGameState):
+    def count_coins(self, state: ReversiGameState):
         # returns the number of coins of each player, returning a tuple 
         # (maximizing, minimizing) (or (1, 2))
         maximizing = 0
         minimizing = 0
         for r in range(state.board_dim):
             for c in range(state.board_dim):
-                if state.board[r][c] == 1:
+                if state.board[r][c] == self.move_num:
                     maximizing += 1
-                elif state.board[r][c] == 2:
+                elif state.board[r][c] != 0:
                     minimizing += 1
         return (maximizing, minimizing)
     
-    @staticmethod
-    def count_moves(state: ReversiGameState):
+    def count_moves(self, state: ReversiGameState):
         turn = state.turn
-        state.turn = 1
+        state.turn = self.move_num
         maximizing = len(state.get_valid_moves())
-        state.turn = 2
+        state.turn = 1 if self.move_num != 1 else 2
         minimizing = len(state.get_valid_moves())
         state.turn = turn
         return (maximizing, minimizing)
     
-    @staticmethod 
-    def count_corners(state: ReversiGameState):
+    def count_corners(self, state: ReversiGameState):
         corners = [
             (0, 0), 
             (0, state.board_dim - 1), 
@@ -150,8 +147,11 @@ class ReversiBot:
         maximizing = 0
         minimizing = 0
         for r, c in corners:
-            if state.board[r][c] == 1:
+            if state.board[r][c] == self.move_num:
                 maximizing += 1
-            elif state.board[r][c] == 2:
+            elif state.board[r][c] != 0:
                 minimizing += 1
         return (maximizing, minimizing)
+
+    def count_stability(self, state: ReversiGameState):
+        pass
