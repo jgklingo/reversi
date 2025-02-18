@@ -120,13 +120,15 @@ class ReversiBot:
             stability_h = 100 * (maximizing_stability - minimizing_stability) / (maximizing_stability + minimizing_stability)
         else:
             stability_h = 0
+
+        # dynamically increase parity_weight as the game goes on
+        parity_weight = ((maximizing_coins + minimizing_coins) / state.board_dim ** 2) * 10
         
-        # TODO: tweak weights
-        return 1 * parity_h + 2 * mobility_h + 10 * corners_h + 4 * stability_h
+        return parity_weight * parity_h + 2 * mobility_h + 10 * corners_h + 4 * stability_h
 
     def count_coins(self, state: ReversiGameState):
         # returns the number of coins of each player, returning a tuple 
-        # (maximizing, minimizing) (or (1, 2))
+        # (maximizing, minimizing)
         maximizing = 0
         minimizing = 0
         for r in range(state.board_dim):
