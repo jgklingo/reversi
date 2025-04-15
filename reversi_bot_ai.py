@@ -10,40 +10,48 @@ class ReversiBot:
         self.move_num = move_num
 
     def make_move(self, state):
-        time_limit = 2.0
-        start_time = time.time()
-        best_move = None
-        depth = 1
+        '''
+        This is the only function that needs to be implemented for the lab!
+        The bot should take a game state and return a move.
+
+        The parameter "state" is of type ReversiGameState and has two useful
+        member variables. The first is "board", which is an 8x8 numpy array
+        of 0s, 1s, and 2s. If a spot has a 0 that means it is unoccupied. If
+        there is a 1 that means the spot has one of player 1's stones. If
+        there is a 2 on the spot that means that spot has one of player 2's
+        stones. The other useful member variable is "turn", which is 1 if it's
+        player 1's turn and 2 if it's player 2's turn.
+
+        ReversiGameState objects have a nice method called get_valid_moves.
+        When you invoke it on a ReversiGameState object a list of valid
+        moves for that state is returned in the form of a list of tuples.
+
+        Move should be a tuple (row, col) of the move you want the bot to make.
+        '''
+        depth = 5
+        alpha = float('-inf')
+        beta = float('inf')
         maximizing = (state.turn == self.move_num)
-        while True:
-            if time.time() - start_time > time_limit:
-                break
-            score, move = self.alphabeta_with_time(state, depth, float('-inf'), float('inf'), maximizing, start_time, time_limit)
-            if move is not None:
-                best_move = move
-            depth += 1
+        best_score, best_move = self.alphabeta(state, depth, alpha, beta, maximizing)
         return best_move
 
-    def alphabeta_with_time(self, state, depth, alpha, beta, maximizing, start_time, time_limit):
-        if time.time() - start_time > time_limit:
-            return self.heuristic(state), None
+    def alphabeta(self, state, depth, alpha, beta, maximizing):
         valid_moves = state.get_valid_moves()
         if depth == 0 or not valid_moves:
             return self.heuristic(state), None
+
         best_move = None
         if maximizing:
             value = float('-inf')
             for move in valid_moves:
                 new_state = copy.deepcopy(state)
                 self.simulate_move(new_state, move)
-                score, _ = self.alphabeta_with_time(new_state, depth - 1, alpha, beta, False, start_time, time_limit)
+                score, _ = self.alphabeta(new_state, depth - 1, alpha, beta, False)
                 if score > value:
                     value = score
                     best_move = move
                 alpha = max(alpha, value)
                 if alpha >= beta:
-                    break
-                if time.time() - start_time > time_limit:
                     break
             return value, best_move
         else:
@@ -51,14 +59,12 @@ class ReversiBot:
             for move in valid_moves:
                 new_state = copy.deepcopy(state)
                 self.simulate_move(new_state, move)
-                score, _ = self.alphabeta_with_time(new_state, depth - 1, alpha, beta, True, start_time, time_limit)
+                score, _ = self.alphabeta(new_state, depth - 1, alpha, beta, True)
                 if score < value:
                     value = score
                     best_move = move
                 beta = min(beta, value)
                 if beta <= alpha:
-                    break
-                if time.time() - start_time > time_limit:
                     break
             return value, best_move
 
