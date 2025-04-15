@@ -23,7 +23,7 @@ class GameNode:
 
 
 class ReversiBot:
-    DEPTH = 6
+    DEPTH = 10
 
     def __init__(self, move_num):
         self.move_num = move_num
@@ -50,10 +50,24 @@ class ReversiBot:
         # valid_moves = state.get_valid_moves()
         # move = rand.choice(valid_moves) # Moves randomly...for now
 
-        print(self.heuristic(state))
+        # print(self.heuristic(state))
         root = GameNode(state)
         maximizing = state.turn == self.move_num
-        best_node = self.alphabeta(root, self.DEPTH, float('-inf'), float('inf'), maximizing=maximizing)
+        best_node = None
+        start_time = time.time()
+        time_limit = 2.0  # seconds, for example
+        
+        for d in range(1, self.DEPTH + 1):
+            if time.time() - start_time > time_limit:
+                # print(f"depth: {d - 1}")
+                break
+            best_node_at_depth = self.alphabeta(root, d, float('-inf'), float('inf'), maximizing)
+            if best_node_at_depth:
+                best_node = best_node_at_depth
+        
+        print(f"Current heuristic: {self.heuristic(state)}")
+        print(f"New heuristic after move: {best_node.score}")
+        print("Score change:", best_node.score - self.heuristic(state))
         return best_node.move
     
     def alphabeta(self, node: GameNode, depth: int, alpha: float, beta: float, maximizing: bool):
@@ -72,10 +86,11 @@ class ReversiBot:
             bssf = None
             for child in node.children:
                 candidate = self.alphabeta(child, depth - 1, alpha, beta, False)
-                if candidate.score > value:
-                    value = candidate.score
+                child.score = candidate.score
+                if child.score > value:
+                    value = child.score
                     bssf = child
-                if value > beta:
+                if value >= beta:
                     break
                 alpha = max(alpha, value)
             node.score = value
@@ -85,10 +100,11 @@ class ReversiBot:
             bssf = None
             for child in node.children:
                 candidate = self.alphabeta(child, depth - 1, alpha, beta, True)
-                if candidate.score < value:
-                    value = candidate.score
+                child.score = candidate.score  # negate because the heuristic is always from the maximizer's perspective?
+                if child.score < value:
+                    value = child.score
                     bssf = child
-                if value < alpha:
+                if value <= alpha:
                     break
                 beta = min(beta, value)
             node.score = value
@@ -96,6 +112,9 @@ class ReversiBot:
 
     
     def heuristic(self, state: ReversiGameState):
+        # if state.board[1][3] == state.turn:  # (in)sanity test
+        #     return -99999
+
         maximizing_corners, minimizing_corners = self.count_corners(state)
         CORNERS = 100
         h_corners = CORNERS * maximizing_corners - CORNERS * minimizing_corners
@@ -138,7 +157,7 @@ class ReversiBot:
         turn = state.turn
         state.turn = self.move_num
         maximizing = len(state.get_valid_moves())
-        state.turn = 2 if self.move_num == 1 else 2
+        state.turn = 2 if self.move_num == 1 else 1
         minimizing = len(state.get_valid_moves())
         state.turn = turn
         return (maximizing, minimizing)
@@ -234,4 +253,3 @@ class ReversiBot:
     #             if state.board[nr][nc] == 0:
     #                 return -1
     #     return 0
-        
