@@ -28,11 +28,24 @@ class ReversiBot:
 
         Move should be a tuple (row, col) of the move you want the bot to make.
         '''
-        depth = 5
+        min_depth = 5
+        max_depth = 10
         alpha = float('-inf')
         beta = float('inf')
         maximizing = (state.turn == self.move_num)
-        best_score, best_move = self.alphabeta(state, depth, alpha, beta, maximizing)
+        # best_score, best_move = self.alphabeta(state, depth, alpha, beta, maximizing)
+
+        start_time = time.time()
+        time_limit = 2.5  # seconds
+        best_move = None
+        for d in range(min_depth, max_depth + 1):
+            if time.time() - start_time > time_limit:
+                print(f"depth: {d - 1}")
+                break
+            best_score_at_depth, best_move_at_depth = self.alphabeta(state, d, alpha, beta, maximizing)
+            if best_move_at_depth:
+                best_move = best_move_at_depth
+
         return best_move
 
     def alphabeta(self, state, depth, alpha, beta, maximizing):
