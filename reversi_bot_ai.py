@@ -1,3 +1,14 @@
+'''
+AI Disclaimer:
+This agent was created in close collaboration with OpenAI's GPT-4.1 preview
+model. Some of the code was generated based on my work in reversi_bot.py, and
+other parts were generated as a result of my prompting. The overall structure
+of the algorithm is of my own making, and the heuristic function is not
+AI-designed. Credit for much of the heuristic function is due to Kartik
+Kukreja and his work published at the following link:
+https://kartikkukreja.wordpress.com/2013/03/30/heuristic-function-for-reversiothello/
+'''
+
 import numpy as np
 import random as rand
 import reversi
@@ -91,6 +102,7 @@ class ReversiBot:
         board = state.board
         my_num = self.move_num
         opp_num = 3 - self.move_num
+
         my_coins = np.sum(board == my_num)
         opp_coins = np.sum(board == opp_num)
         parity = 100 * (my_coins - opp_coins) / (my_coins + opp_coins + 1)
