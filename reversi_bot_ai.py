@@ -47,7 +47,7 @@ class ReversiBot:
         # best_score, best_move = self.alphabeta(state, depth, alpha, beta, maximizing)
 
         start_time = time.time()
-        time_limit = 2.5  # seconds
+        time_limit = 2.0  # seconds
         best_move = None
         for d in range(min_depth, max_depth + 1):
             if time.time() - start_time > time_limit:
@@ -94,7 +94,7 @@ class ReversiBot:
 
     def simulate_move(self, state, move):
         row, col = move
-        change_colors(row, col, state.turn - 1, state)  # flip stones correctly
+        change_colors(row, col, state.turn - 1, state)
         state.board[row][col] = state.turn
         state.turn = 3 - state.turn
 
@@ -105,7 +105,8 @@ class ReversiBot:
 
         my_coins = np.sum(board == my_num)
         opp_coins = np.sum(board == opp_num)
-        parity = 100 * (my_coins - opp_coins) / (my_coins + opp_coins + 1)
+        parity_weight = 50 + ((my_coins + opp_coins) / state.board_dim ** 2) * 100
+        parity = (my_coins - opp_coins) / (my_coins + opp_coins + 1)
 
         # Corners
         corners = [(0,0), (0,7), (7,0), (7,7)]
@@ -146,4 +147,4 @@ class ReversiBot:
                     opp_edges += 1
         edge_score = 5 * (my_edges - opp_edges)
 
-        return parity + corner_score + adj_score + mobility + edge_score
+        return parity_weight * parity + corner_score + adj_score + mobility + edge_score

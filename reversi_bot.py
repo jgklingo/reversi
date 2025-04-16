@@ -18,6 +18,7 @@ class GameNode:
         for move in valid_moves:
             new_state = copy.deepcopy(node.state)
             change_colors(move[0], move[1], new_state.turn, new_state)
+            new_state.board[move[0]][move[1]] = new_state.turn
             new_state.turn = 3 - new_state.turn
             node.children.append(GameNode(new_state, move))
 
@@ -49,6 +50,10 @@ class ReversiBot:
         '''
         # valid_moves = state.get_valid_moves()
         # move = rand.choice(valid_moves) # Moves randomly...for now
+
+        # print(state.turn)
+        # if state.board[1][3] == state.turn:
+        #     exit(1)
 
         # print(self.heuristic(state))
         root = GameNode(state)
